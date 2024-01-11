@@ -1,6 +1,8 @@
 asgiref==3.7.2
 Django==5.0.1
 django-environ==0.11.2
+djangorestframework==3.14.0
 mysqlclient==2.2.1
+pytz==2023.3.post1
 sqlparse==0.4.4
 tzdata==2023.4
