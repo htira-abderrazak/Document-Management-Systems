@@ -23,3 +23,4 @@ class File(models.Model):
     file = models.FileField(upload_to=get_upload_path, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
