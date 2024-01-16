@@ -5,11 +5,23 @@ import os
 from datetime import date
 
 def get_upload_path(instance, filename):
-    today_date = date.today().strftime('%Y-%m-%d')
-    
-    upload_path = os.path.join('uploads', today_date)
+    today_date = date.today()
 
-    # Check if the folder exists, create it if not
+    year_folder = today_date.strftime('2003')
+    month_folder = today_date.strftime('2')
+    day_folder = today_date.strftime('1')
+
+    upload_path = os.path.join('uploads', year_folder, month_folder, day_folder)
+
+    # Check if the year folder exists, create it if not
+    if not os.path.exists(os.path.join('uploads', year_folder)):
+        os.makedirs(os.path.join('uploads', year_folder))
+
+    # Check if the month folder exists, create it if not
+    if not os.path.exists(os.path.join('uploads', year_folder, month_folder)):
+        os.makedirs(os.path.join('uploads', year_folder, month_folder))
+
+    # Check if the day folder exists, create it if not
     if not os.path.exists(upload_path):
         os.makedirs(upload_path)
 
