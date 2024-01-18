@@ -5,7 +5,7 @@ from rest_framework.exceptions import MethodNotAllowed
 from .models import Directory
 from .serializers import DirectorySerializer,DirectoryListSerializer
 from rest_framework.views import APIView
-
+from django.http import JsonResponse
 # Create your views here.
 
 class FolderViewSet(viewsets.ModelViewSet):
@@ -23,4 +23,16 @@ class GetFolder(APIView):
         except Directory.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         folder = DirectoryListSerializer(folder)
+        return Response(folder.data)
+
+class GetRootFolders(APIView):
+
+    def get(self,request):
+        try:
+
+            folder = Directory.objects.get(parent = None,is_deleted= False)
+        except Directory.DoesNotExist:
+            return JsonResponse({})
+
+        folder = DirectorySerializer(folder)
         return Response(folder.data)
