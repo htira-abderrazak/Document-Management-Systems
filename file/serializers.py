@@ -20,3 +20,7 @@ class FileSerializer(serializers.ModelSerializer):
                 {"name": "this name already exists."}
             )
         return super().create(validated_data)
+    def update(self, instance, validated_data):
+        if os.path.isfile(instance.file.path):
+            os.remove(instance.file.path)
+        return super().update(instance, validated_data)
