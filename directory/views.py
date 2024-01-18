@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 class FolderViewSet(viewsets.ModelViewSet):
     queryset = Directory.objects.all()
-    serializer_class = DirectoryListSerializer
+    serializer_class = DirectorySerializer
     def list(self, request, *args, **kwargs):
         raise MethodNotAllowed("get")
     def retrieve(self, request, *args, **kwargs):
@@ -19,9 +19,8 @@ class GetFolder(APIView):
 
     def get(self,request,pk):
         try:
-            folder = Directory.objects.get(id=pk)
+            folder = Directory.objects.get(id=pk,is_deleted= False)
         except Directory.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         folder = DirectoryListSerializer(folder)
         return Response(folder.data)
-
