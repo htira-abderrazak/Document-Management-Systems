@@ -3,7 +3,7 @@ from rest_framework import viewsets,status
 from rest_framework.response import Response
 from rest_framework.exceptions import MethodNotAllowed
 from .models import Directory
-from .serializers import DirectorySerializer,DirectoryListSerializer
+from .serializers import DirectorySerializer,DirectoryListSerializer,NavigationPaneSerializer
 from rest_framework.views import APIView
 from django.http import JsonResponse
 # Create your views here.
@@ -28,11 +28,19 @@ class GetFolder(APIView):
 class GetRootFolders(APIView):
 
     def get(self,request):
-        try:
 
-            folder = Directory.objects.get(parent = None,is_deleted= False)
-        except Directory.DoesNotExist:
-            return JsonResponse({})
 
-        folder = DirectorySerializer(folder)
+        folder = Directory.objects.filter(parent = None,is_deleted= False)
+
+
+        folder = DirectorySerializer(folder,many=True)
+        return Response(folder.data)
+    
+class GetNavigationPane(APIView):
+    def get(self,request):
+
+
+        folder = Directory.objects.filter(parent = None,is_deleted= False)
+
+        folder = NavigationPaneSerializer(folder,many = True)
         return Response(folder.data)

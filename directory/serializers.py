@@ -20,21 +20,21 @@ class DirectorySerializer(serializers.ModelSerializer):
     
 
 class DirectoryListSerializer(serializers.ModelSerializer):
-    root = serializers.SerializerMethodField()
+    adress = serializers.SerializerMethodField()
     folders = serializers.SerializerMethodField()
     files = serializers.SerializerMethodField()
     class Meta:
         model = Directory
-        fields = ['root','folders','files','id']
-    def get_root(self, obj):
-        root = []
+        fields = ['adress','folders','files','id']
+    def get_adress(self, obj):
+        adress = []
         current_folder = obj
         while current_folder:
-            root.append(f"{current_folder.name}")
+            adress.append(f"{current_folder.name}")
             current_folder = current_folder.parent
 
-        # Join the list to create the root chain string
-        return " / ".join(root)
+        # Join the list to create the adress chain string
+        return " / ".join(adress)
     def get_folders(self, obj):
         folders = Directory.objects.filter(parent = obj,is_deleted = False)
         data = DirectorySerializer(folders, many=True).data
@@ -43,3 +43,21 @@ class DirectoryListSerializer(serializers.ModelSerializer):
         files = File.objects.filter(directory = obj,is_deleted = False)
         data =  FileSerializer(files,many = True).data
         return data
+
+
+class NavigationPaneSerializer(serializers.ModelSerializer):
+    content = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Directory
+        fields = ['id','name','content']
+    def get_content(self, obj):
+        folders = Directory.objects.filter(parent = obj,is_deleted=False)
+        if folders.exists():
+            folders = NavigationPaneSerializer(folders,many = True).data
+        files = File.objects.filter(directory = obj,is_deleted = False)
+        files =  FileSerializer(files,many = True).data
+        return {
+            'folders': folders,
+            'files': files,
+        }
