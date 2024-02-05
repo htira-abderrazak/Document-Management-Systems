@@ -12,6 +12,7 @@ colorama==0.4.6
 Django==5.0.1
 django-celery==3.3.1
 django-celery-beat==2.1.0
+django-cors-headers==4.3.1
 django-environ==0.11.2
 django-timezone-field==4.2.3
 djangorestframework==3.14.0
