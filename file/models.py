@@ -7,9 +7,9 @@ from datetime import date
 def get_upload_path(instance, filename):
     today_date = date.today()
 
-    year_folder = today_date.strftime('2003')
-    month_folder = today_date.strftime('2')
-    day_folder = today_date.strftime('1')
+    year_folder = str(today_date.year)
+    month_folder = str(today_date.month)
+    day_folder = str(today_date.day)
 
     upload_path = os.path.join('uploads', year_folder, month_folder, day_folder)
 
