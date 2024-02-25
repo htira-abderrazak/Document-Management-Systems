@@ -25,16 +25,14 @@ class DirectoryListSerializer(serializers.ModelSerializer):
     files = serializers.SerializerMethodField()
     class Meta:
         model = Directory
-        fields = ['adress','folders','files','id']
+        fields = ['adress','folders','files','id','updated_at','created_at']
     def get_adress(self, obj):
         adress = []
         current_folder = obj
         while current_folder:
-            adress.append(f"{current_folder.name}")
+            adress.insert(0,[current_folder.name,current_folder.id])
             current_folder = current_folder.parent
-
-        # Join the list to create the adress chain string
-        return " / ".join(adress)
+        return adress
     def get_folders(self, obj):
         folders = Directory.objects.filter(parent = obj,is_deleted = False)
         data = DirectorySerializer(folders, many=True).data

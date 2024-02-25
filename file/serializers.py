@@ -7,7 +7,7 @@ class FileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = File
-        fields =['id','name','directory','file']
+        fields =['id','name','directory','file','updated_at','created_at']
 
     file = serializers.FileField(required = True)
     def create(self, validated_data):
