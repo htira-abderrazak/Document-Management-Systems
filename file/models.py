@@ -30,7 +30,7 @@ def get_upload_path(instance, filename):
 
 class File(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=20,blank =True)
+    name = models.CharField(max_length=50,blank =True)
     directory = models.ForeignKey(Directory,on_delete=models.CASCADE)
     file = models.FileField(upload_to=get_upload_path, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
