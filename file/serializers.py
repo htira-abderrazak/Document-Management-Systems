@@ -41,7 +41,7 @@ class FileSerializer(serializers.ModelSerializer):
     
 def find_matching_folder(file_name, parent_folder_id):
     parent_folder = Directory.objects.get(id=parent_folder_id)
-    
+
     # Generate all possible substrings of length 3 from the file name
     substrings = {file_name[i:i+n] for n in range(3, len(file_name)+1) for i in range(len(file_name) - n + 1)}
     print(substrings)

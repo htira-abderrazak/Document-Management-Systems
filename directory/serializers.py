@@ -17,6 +17,13 @@ class DirectorySerializer(serializers.ModelSerializer):
                 {"name": "this name already exists."}
             )
         return super().create(validated_data)
+    def update(self, instance, validated_data):
+        directories = Directory.objects.filter(parent = instance.parent,name = validated_data["name"])
+        if(directories.exists()):
+            raise serializers.ValidationError(
+                {"name": "this name already exists."}
+            )
+        return super().update(instance, validated_data)
     
 
 class DirectoryListSerializer(serializers.ModelSerializer):
