@@ -25,10 +25,7 @@ class FileSerializer(serializers.ModelSerializer):
             validated_data["directory"]=matching_folder
 
         return super().create(validated_data)
-    def update(self, instance, validated_data):
-        if os.path.isfile(instance.file.path):
-            os.remove(instance.file.path)
-        return super().update(instance, validated_data)
+
     file = serializers.FileField()
 
     def validate_file(self, value):
@@ -52,3 +49,22 @@ def find_matching_folder(file_name, parent_folder_id):
         return matching_folders.first()
     else:
         return None
+    
+#upadte name serializer
+class FileSerializerUpdate(serializers.ModelSerializer):
+
+    class Meta:
+        model = File
+        fields =['name']
+
+    def update(self, instance, validated_data):
+        files = File.objects.filter(directory = instance.directory,name = validated_data["name"])
+        if(files.exists()):
+            raise serializers.ValidationError(
+                {"name": "this name already exists."}
+            )
+        instance.name = validated_data["name"]
+        # if os.path.isfile(instance.file.path):
+        #     os.remove(instance.file.path)
+        instance.save()
+        return instance
