@@ -5,10 +5,10 @@ import os
 
 
 class FileSerializer(serializers.ModelSerializer):
-
+    size = serializers.SerializerMethodField()
     class Meta:
         model = File
-        fields =['id','name','directory','file','updated_at','created_at']
+        fields =['id','name','directory','file','updated_at','created_at','size']
 
     file = serializers.FileField(required = True)
     def create(self, validated_data):
@@ -35,7 +35,8 @@ class FileSerializer(serializers.ModelSerializer):
         if file_size > max_file_size:
             raise serializers.ValidationError("File size exceeds the allowed limit.")
         return value
-    
+    def get_size(self, obj):
+        return obj.file.size / 1024
 def find_matching_folder(file_name, parent_folder_id):
     parent_folder = Directory.objects.get(id=parent_folder_id)
 
