@@ -6,6 +6,9 @@ from rest_framework.exceptions import MethodNotAllowed
 from .models import Directory
 
 from .serializers import DirectorySerializer,DirectoryListSerializer,NavigationPaneSerializer
+
+from datetime import date
+
 # Create your views here.
 
 #File Management View (update, delete , create)
@@ -16,6 +19,13 @@ class FolderViewSet(viewsets.ModelViewSet):
         raise MethodNotAllowed("get")
     def retrieve(self, request, *args, **kwargs):
         raise MethodNotAllowed("get")
+    # folder soft delete 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_deleted = True
+        instance.expired_date = date.today()
+        instance.save()
+        return Response(status=204)
     
 #get folder content By ID View
 class GetFolder(APIView):
@@ -44,7 +54,7 @@ class GetRootFolders(APIView):
 class GetNavigationPane(APIView):
     def get(self,request):
 
-
+        
         folder = Directory.objects.filter(parent = None,is_deleted= False)
 
         folder = NavigationPaneSerializer(folder,many = True)
