@@ -9,6 +9,7 @@ from .models import File
 from datetime import date
 # Create your views here.
 
+#file management View (create, update, Delete)
 class Fileviewset(viewsets.ModelViewSet):
     queryset = File.objects.all()
     serializer_class = FileSerializer
@@ -21,6 +22,7 @@ class Fileviewset(viewsets.ModelViewSet):
 
         return self.queryset.filter(is_deleted=False)
 
+    #soft delete file
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.is_deleted = True
