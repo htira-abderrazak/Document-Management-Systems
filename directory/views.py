@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import MethodNotAllowed
 
+from file.models import File
+from file.serializers import FileSerializer
+
 from .models import Directory
 
 from .serializers import DirectorySerializer,DirectoryListSerializer,NavigationPaneSerializer
@@ -59,3 +62,16 @@ class GetNavigationPane(APIView):
 
         folder = NavigationPaneSerializer(folder,many = True)
         return Response(folder.data)
+    
+
+
+#search files and folder by name
+class SerchByname(APIView):
+    def get(self,request,name):
+        search_string = name
+    
+        folder = Directory.objects.filter(is_deleted= False,name__icontains=search_string)
+        files = File.objects.filter(is_deleted= False,name__icontains=search_string)
+        folder = DirectorySerializer(folder,many = True)
+        files = FileSerializer(files,many = True)
+        return Response([folder.data]+[files.data])
