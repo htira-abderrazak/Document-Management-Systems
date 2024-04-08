@@ -37,3 +37,4 @@ class File(models.Model):
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
     expired_date = models.DateField(null=True, blank=True)
+    favorite  = models.BooleanField(default=False)
