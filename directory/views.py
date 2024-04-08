@@ -75,3 +75,13 @@ class SerchByname(APIView):
         folder = DirectorySerializer(folder,many = True)
         files = FileSerializer(files,many = True)
         return Response([folder.data]+[files.data])
+    
+# get deleted files and folders
+class GetTrash(APIView):
+    def get(self,request):
+    
+        folder = Directory.objects.filter(is_deleted= True)
+        files = File.objects.filter(is_deleted= True)
+        folder = DirectorySerializer(folder,many = True)
+        files = FileSerializer(files,many = True)
+        return Response([folder.data]+[files.data])
