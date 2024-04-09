@@ -55,16 +55,19 @@ class FileSerializerUpdate(serializers.ModelSerializer):
 
     class Meta:
         model = File
-        fields =['name']
+        fields =['name','favorite']
 
     def update(self, instance, validated_data):
-        files = File.objects.filter(directory = instance.directory,name = validated_data["name"])
-        if(files.exists()):
-            raise serializers.ValidationError(
-                {"name": "this name already exists."}
-            )
-        instance.name = validated_data["name"]
-        # if os.path.isfile(instance.file.path):
-        #     os.remove(instance.file.path)
+        # Check for 'name' in validated_data to avoid KeyError
+        if 'name' in validated_data:
+            # Validate unique name within the same directory
+            if validated_data["name"] != instance.name:  # Check for change
+                files = File.objects.filter(directory=instance.directory, name=validated_data["name"])
+                if files.exists():
+                    raise serializers.ValidationError({"name": "This name already exists."})
+            instance.name = validated_data["name"]
+
+        # Update favorite regardless of name change
+        instance.favorite = validated_data.get('favorite', instance.favorite)  # Use get() for optional field
         instance.save()
         return instance

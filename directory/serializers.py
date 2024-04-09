@@ -6,7 +6,7 @@ class DirectorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Directory
-        fields = ['id','name','parent','created_at','updated_at']
+        fields = ['id','name','parent','created_at','updated_at','favorite']
     def create(self, validated_data):
         if validated_data["parent"]:
             directories = Directory.objects.filter(parent = validated_data["parent"],name = validated_data["name"])
@@ -66,3 +66,4 @@ class NavigationPaneSerializer(serializers.ModelSerializer):
             'folders': folders,
             'files': files,
         }
+    
