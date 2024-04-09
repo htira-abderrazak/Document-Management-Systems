@@ -85,3 +85,13 @@ class GetTrash(APIView):
         folder = DirectorySerializer(folder,many = True)
         files = FileSerializer(files,many = True)
         return Response([folder.data]+[files.data])
+    
+#get favorite files and folders
+class GetFavorite(APIView):
+    def get(self,request):
+    
+        folder = Directory.objects.filter(is_deleted= False,favorite = True)
+        files = File.objects.filter(is_deleted= False,favorite = True)
+        folder = DirectorySerializer(folder,many = True)
+        files = FileSerializer(files,many = True)
+        return Response([folder.data]+[files.data])

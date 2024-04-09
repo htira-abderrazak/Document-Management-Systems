@@ -9,7 +9,9 @@ urlpatterns=[
     path("root-folders/", view.GetRootFolders.as_view()),
     path("navigation-pane/", view.GetNavigationPane.as_view()),
     path("search/<str:name>/",view.SerchByname.as_view()),
-    path("trash/",view.GetTrash.as_view())
+    path("trash/",view.GetTrash.as_view()),
+    path("favorite/",view.GetFavorite.as_view())
+
 
 ]
 urlpatterns += router.urls
