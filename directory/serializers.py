@@ -17,14 +17,21 @@ class DirectorySerializer(serializers.ModelSerializer):
                 {"name": "this name already exists."}
             )
         return super().create(validated_data)
+
     def update(self, instance, validated_data):
-        directories = Directory.objects.filter(parent = instance.parent,name = validated_data["name"])
-        if(directories.exists()):
-            raise serializers.ValidationError(
-                {"name": "this name already exists."}
-            )
-        return super().update(instance, validated_data)
-    
+        # Check for 'name' in validated_data to avoid KeyError
+        if 'name' in validated_data:
+            # Validate unique name within the same directory
+            if validated_data["name"] != instance.name:  # Check for change
+                directories = Directory.objects.filter(parent = instance.parent,name = validated_data["name"])
+                if directories.exists():
+                    raise serializers.ValidationError({"name": "This name already exists."})
+            instance.name = validated_data["name"]
+            
+        # Update favorite regardless of name change
+        instance.favorite = validated_data.get('favorite', instance.favorite)  # Use get() for optional field
+        instance.save()
+        return instance
 
 class DirectoryListSerializer(serializers.ModelSerializer):
     adress = serializers.SerializerMethodField()
