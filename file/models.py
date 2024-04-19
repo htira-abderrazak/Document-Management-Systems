@@ -38,3 +38,6 @@ class File(models.Model):
     is_deleted = models.BooleanField(default=False)
     expired_date = models.DateField(null=True, blank=True)
     favorite  = models.BooleanField(default=False)
+
+class Recent(models.Model):
+    files = models.ForeignKey(File, on_delete=models.CASCADE)
