@@ -2,7 +2,6 @@ from django.db import models
 
 import uuid
 
-from file.models import File
 # Create your models here.
 class Directory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -17,4 +16,4 @@ class Directory(models.Model):
 #model for store the recent files and folders
 class Recent(models.Modal):
     folders = models.ForeignKey(Directory, on_delete=models.CASCADE)
-    files = models.ForeignKey(File, on_delete=models.CASCADE)
+    files = models.ForeignKey('file.File', on_delete=models.CASCADE)
