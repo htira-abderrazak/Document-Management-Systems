@@ -14,6 +14,6 @@ class Directory(models.Model):
     favorite  = models.BooleanField(default=False)
 
 #model for store the recent files and folders
-class Recent(models.Modal):
+class Recent(models.Model):
     folders = models.ForeignKey(Directory, on_delete=models.CASCADE)
     files = models.ForeignKey('file.File', on_delete=models.CASCADE)
