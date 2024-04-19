@@ -16,4 +16,3 @@ class Directory(models.Model):
 #model for store the recent files and folders
 class Recent(models.Model):
     folders = models.ForeignKey(Directory, on_delete=models.CASCADE)
-    files = models.ForeignKey('file.File', on_delete=models.CASCADE)
