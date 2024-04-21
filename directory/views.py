@@ -6,7 +6,7 @@ from rest_framework.exceptions import MethodNotAllowed
 from file.models import File
 from file.serializers import FileSerializer
 
-from .models import Directory
+from .models import Directory, Recent
 
 from .serializers import DirectorySerializer,DirectoryListSerializer,NavigationPaneSerializer
 
@@ -38,6 +38,17 @@ class GetFolder(APIView):
             folder = Directory.objects.get(id=pk,is_deleted= False)
         except Directory.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        recent_folders = Recent.objects.all()
+
+        if not Recent.objects.filter(folders = folder).exists():
+            if recent_folders.count() < 10 :
+                Recent(folders =folder).save()
+            else :
+                #delte the oldest folder in recent and add the neww recent folder
+                first = recent_folders.first()
+                first.delete()
+                Recent(folders =folder).save()
+                
         folder = DirectoryListSerializer(folder)
         return Response(folder.data)
 
@@ -46,9 +57,7 @@ class GetRootFolders(APIView):
 
     def get(self,request):
 
-
         folder = Directory.objects.filter(parent = None,is_deleted= False)
-
 
         folder = DirectorySerializer(folder,many=True)
         return Response(folder.data)
