@@ -41,3 +41,7 @@ class File(models.Model):
 
 class Recent(models.Model):
     files = models.ForeignKey(File, on_delete=models.CASCADE)
+
+
+class TotalFileSize(models.Model):
+    total_size = models.PositiveIntegerField(default=0)
