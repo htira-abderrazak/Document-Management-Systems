@@ -1,6 +1,6 @@
 from directory.models import Directory
 from rest_framework import serializers
-from file.models import File
+from file.models import File, TotalFileSize
 import os
 
 
@@ -29,11 +29,16 @@ class FileSerializer(serializers.ModelSerializer):
     file = serializers.FileField()
 
     def validate_file(self, value):
+
+        total_size =TotalFileSize.objects.get(id=1)
+
         # Access the file size
         file_size = value.size
         max_file_size = 10 * 1024 * 1024  # 10 MB
-        if file_size > max_file_size:
+        if file_size > max_file_size and total_size.total_size< 100:
             raise serializers.ValidationError("File size exceeds the allowed limit.")
+        total_size.total_size += (value.size /1024/1024)
+        total_size.save()
         return value
     def get_size(self, obj):
         return obj.file.size / 1024
