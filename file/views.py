@@ -5,7 +5,7 @@ from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.views import APIView
 
 from .serializers import FileSerializer, FileSerializerUpdate
-from .models import File
+from .models import File, TotalFileSize
 from datetime import date
 # Create your views here.
 
@@ -36,4 +36,10 @@ class Fileviewset(viewsets.ModelViewSet):
 
         
     
+class GetTotalSize(APIView):
+    def get(self,request):
+        total_size =TotalFileSize.objects.get(id=1)
+
+        return Response(total_size.total_size)
+
 
