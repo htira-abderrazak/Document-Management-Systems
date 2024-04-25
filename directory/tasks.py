@@ -14,7 +14,7 @@ def periodic_delete():
     now = date.today()
     expiration_start = now - timedelta(hours=24)
     # Define the filter criteria using Q objects
-    expired_query = Q(is_deleted = True, expired_date__lte=expiration_start)
+    expired_query = Q(is_deleted = True, updated_at__lte=expiration_start)
     directories = Directory.objects.filter(expired_query)
     files = File.objects.filter(expired_query)
     directories.delete()

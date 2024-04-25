@@ -7,11 +7,11 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DMS.settings')
 
 app = Celery('DMS')
 app.conf.enable_utc = False
-#Execute every three hours: midnight, 3am, 6am, 9am, noon, 3pm, 6pm, 9pm.
+#Execute every minute
 app.conf.beat_schedule = {
     'periodic_delete': {
         'task': 'directory.tasks.periodic_delete',
-        'schedule': crontab(minute=0, hour='*/3'),
+        'schedule': crontab(minute='*/1', hour='*'),
 
 
     },
