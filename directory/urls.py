@@ -11,7 +11,8 @@ urlpatterns=[
     path("search/<str:name>/",view.SerchByname.as_view()),
     path("trash/",view.GetTrash.as_view()),
     path("favorite/",view.GetFavorite.as_view()),
-    path("recent/",view.GetRecent.as_view())
+    path("recent/",view.GetRecent.as_view()),
+    path("clean/",view.CleanTrash.as_view())
 
 
 ]

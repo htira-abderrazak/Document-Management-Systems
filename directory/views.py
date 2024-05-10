@@ -1,9 +1,11 @@
+import os
+
 from rest_framework import viewsets,status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import MethodNotAllowed
 
-from file.models import File,Recent as File_Recent
+from file.models import File,Recent as File_Recent, TotalFileSize
 from file.serializers import FileSerializer
 
 from .models import Directory, Recent
@@ -118,3 +120,20 @@ class GetRecent(APIView):
             folders.append(DirectorySerializer(folder.folders).data)
         return Response([folders]+[files])
 
+
+class CleanTrash(APIView):
+
+    def delete(self,request):
+        folder = Directory.objects.filter(is_deleted= True)
+        files = File.objects.filter(is_deleted= True)
+        folder.delete()
+        files.delete()
+        total_size =TotalFileSize.objects.get(id=1)
+        size = 0        
+        for file in files:
+            if os.path.isfile(file.file.path):
+                    os.remove(file.file.path)
+            size -= file.file.size
+        total_size.total_size= size/1024/1024
+        total_size.save()
+        return Response(status=204)
