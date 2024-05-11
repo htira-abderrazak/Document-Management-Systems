@@ -137,3 +137,16 @@ class CleanTrash(APIView):
         total_size.total_size= size/1024/1024
         total_size.save()
         return Response(status=204)
+
+class RestoreFolder(APIView):
+
+    def put(self,request,id):
+        try : 
+            folder = Directory.objects.get(id = id)
+
+        except Directory.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if folder.is_deleted == True:
+            folder.is_deleted = False
+            folder.save()
+        return Response(status=204)

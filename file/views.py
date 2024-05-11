@@ -52,7 +52,7 @@ class RestoreFile(APIView):
 
         except File.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-        file.is_deleted = False
-        file.save()
+        if file.is_deleted == True :
+            file.is_deleted = False
+            file.save()
         return Response(status=204)
