@@ -1,6 +1,7 @@
 from django.shortcuts import render
+
+from rest_framework import viewsets,status
 from rest_framework.response import Response
-from rest_framework import viewsets
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.views import APIView
 
@@ -43,3 +44,15 @@ class GetTotalSize(APIView):
         return Response(total_size.total_size)
 
 
+class RestoreFile(APIView):
+
+    def put(self,request,id):
+        try : 
+            file = File.objects.get(id = id)
+
+        except File.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        file.is_deleted = False
+        file.save()
+        return Response(status=204)
