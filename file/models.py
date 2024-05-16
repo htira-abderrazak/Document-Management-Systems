@@ -4,6 +4,9 @@ from directory.models import Directory
 import os
 from datetime import date
 
+import os
+from datetime import date
+from django.conf import settings
 def get_upload_path(instance, filename):
     today_date = date.today()
 
@@ -11,21 +14,16 @@ def get_upload_path(instance, filename):
     month_folder = str(today_date.month)
     day_folder = str(today_date.day)
 
-    upload_path = os.path.join('uploads', year_folder, month_folder, day_folder)
+    # Construct the relative upload path
+    upload_path = os.path.join(year_folder, month_folder, day_folder)
 
-    # Check if the year folder exists, create it if not
-    if not os.path.exists(os.path.join('uploads', year_folder)):
-        os.makedirs(os.path.join('uploads', year_folder))
-
-    # Check if the month folder exists, create it if not
-    if not os.path.exists(os.path.join('uploads', year_folder, month_folder)):
-        os.makedirs(os.path.join('uploads', year_folder, month_folder))
-
-    # Check if the day folder exists, create it if not
-    if not os.path.exists(upload_path):
-        os.makedirs(upload_path)
+    # Ensure the directory exists
+    full_path = os.path.join(settings.MEDIA_ROOT, upload_path)
+    if not os.path.exists(full_path):
+        os.makedirs(full_path)
 
     return os.path.join(upload_path, filename)
+
 
 
 class File(models.Model):
