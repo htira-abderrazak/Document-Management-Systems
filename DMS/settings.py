@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'directory',
     'rest_framework',
     'django_celery_beat',
-    "corsheaders",
+    'corsheaders',
 
 ]
 
