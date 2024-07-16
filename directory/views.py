@@ -94,8 +94,8 @@ class SerchByname(APIView):
     def get(self,request,name):
         search_string = name
     
-        folder = Directory.objects.filter(is_deleted= False,user=request.user,username__icontains=search_string)
-        files = File.objects.filter(is_deleted= False,name__icontains=search_string)
+        folder = Directory.objects.filter(is_deleted= False,user=request.user,name__icontains=search_string)
+        files = File.objects.filter(is_deleted= False,name__icontains=search_string,user=request.user)
         folder = DirectorySerializer(folder,many = True)
         files = FileSerializer(files,many = True)
         return Response([folder.data]+[files.data])
