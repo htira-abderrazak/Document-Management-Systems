@@ -145,12 +145,12 @@ class CleanTrash(APIView):
     def delete(self,request):
         folder = Directory.objects.filter(is_deleted= True, user = request.user)
         files = File.objects.filter(is_deleted= True, user = request.user)
- 
+        user = request.user
         paths =[] # store paths to delete them after deleting the 
         for file in files:
             if os.path.isfile(file.file.path):
                 paths.append(file.file.path)
-            user = request.user
+
             totalSize = user.total_size - (file.file.size /1024 /1024)
             user.total_size = totalSize
             user.save()
@@ -161,8 +161,8 @@ class CleanTrash(APIView):
                 os.remove(path)
         if (size<0):
             size = 0
-        total_size.total_size= int(size)
-        total_size.save()
+        user.total_size= int(size)
+        user.save()
         return Response(status=204)
 
 class RestoreFolder(APIView):
