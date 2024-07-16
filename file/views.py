@@ -4,9 +4,10 @@ from rest_framework import viewsets,status
 from rest_framework.response import Response
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import FileSerializer, FileSerializerUpdate
-from .models import File, TotalFileSize
+from .models import File
 from datetime import date
 # Create your views here.
 
@@ -25,6 +26,8 @@ class Fileviewset(viewsets.ModelViewSet):
 
     #soft delete file
     def destroy(self, request, *args, **kwargs):
+        if request.user != instance.user :
+            return Response(status=status.HTTP_403_FORBIDDEN)        
         instance = self.get_object()
         instance.is_deleted = True
         instance.expired_date = date.today()
@@ -38,17 +41,20 @@ class Fileviewset(viewsets.ModelViewSet):
         
     
 class GetTotalSize(APIView):
-    def get(self,request):
-        total_size =TotalFileSize.objects.get(id=1)
+    permission_classes=[IsAuthenticated]
 
-        return Response(total_size.total_size)
+    def get(self,request):
+        
+
+        return Response(request.user.total_size)
 
 
 class RestoreFile(APIView):
+    permission_classes=[IsAuthenticated]
 
     def put(self,request,id):
         try : 
-            file = File.objects.get(id = id)
+            file = File.objects.get(id = id,user=  request.user)
 
         except File.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)

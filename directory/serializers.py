@@ -2,6 +2,8 @@ from rest_framework import serializers
 from directory.models import Directory
 from file.models import File
 from file.serializers import FileSerializer
+from rest_framework.exceptions import PermissionDenied
+
 class DirectorySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -16,9 +18,13 @@ class DirectorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"name": "this name already exists."}
             )
+        user = self.context['request'].user
+        validated_data['user'] = user
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
+        if self.context['request'].user != instance.user :
+            raise PermissionDenied('no permission')
         # Check for 'name' in validated_data to avoid KeyError
         if 'name' in validated_data:
             # Validate unique name within the same directory
@@ -32,6 +38,7 @@ class DirectorySerializer(serializers.ModelSerializer):
         instance.favorite = validated_data.get('favorite', instance.favorite)  # Use get() for optional field
         instance.save()
         return instance
+    
 
 class DirectoryListSerializer(serializers.ModelSerializer):
     adress = serializers.SerializerMethodField()

@@ -144,3 +144,4 @@ uploads/*
 run.bat
 makemigration.bat
 migrate.bat
+activate.bat

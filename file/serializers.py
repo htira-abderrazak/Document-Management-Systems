@@ -1,7 +1,7 @@
 from directory.models import Directory
 from rest_framework import serializers
-from file.models import File, TotalFileSize
-import os
+from rest_framework.exceptions import PermissionDenied
+from file.models import File
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -23,22 +23,23 @@ class FileSerializer(serializers.ModelSerializer):
         matching_folder = find_matching_folder(validated_data["name"], validated_data["directory"].id)
         if matching_folder:
             validated_data["directory"]=matching_folder
-
+        user = self.context['request'].user
+        validated_data['user'] = user
         return super().create(validated_data)
 
     file = serializers.FileField()
 
     def validate_file(self, value):
+        user = self.context['request'].user
 
-        total_size =TotalFileSize.objects.get(id=1)
 
         # Access the file size
         file_size = value.size
         max_file_size = 10 * 1024 * 1024  # 10 MB
-        if file_size > max_file_size or total_size.total_size > 100:
+        if file_size > max_file_size or user.total_size > 100:
             raise serializers.ValidationError("File size exceeds the allowed limit. (10MB)")
-        total_size.total_size += (value.size /1024/1024)
-        total_size.save()
+        user.total_size += (value.size /1024/1024)
+        user.save()
         return value
     def get_size(self, obj):
         return obj.file.size / 1024
@@ -63,6 +64,8 @@ class FileSerializerUpdate(serializers.ModelSerializer):
         fields =['name','favorite']
 
     def update(self, instance, validated_data):
+        if self.context['request'].user != instance.user :
+            raise PermissionDenied('no permission')
         # Check for 'name' in validated_data to avoid KeyError
         if 'name' in validated_data:
             # Validate unique name within the same directory

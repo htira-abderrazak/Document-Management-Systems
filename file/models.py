@@ -7,6 +7,8 @@ from datetime import date
 import os
 from datetime import date
 from django.conf import settings
+
+from user.models import User
 def get_upload_path(instance, filename):
     today_date = date.today()
 
@@ -35,10 +37,10 @@ class File(models.Model):
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
     favorite  = models.BooleanField(default=False)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,null=True, blank=True)
 
 class Recent(models.Model):
     files = models.ForeignKey(File, on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,null=True, blank=True, related_name='recentFiles')
 
 
-class TotalFileSize(models.Model):
-    total_size = models.PositiveIntegerField(default=0)

@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+from datetime import timedelta
 import os
 from pathlib import Path
 import environ
@@ -30,6 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -42,10 +44,16 @@ INSTALLED_APPS = [
     'file',
     'directory',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'user',
     'django_celery_beat',
     'corsheaders',
 
 ]
+
+
+
 
 MIDDLEWARE = [
     # 'corsheaders.middleware.CorsMiddleware',
@@ -59,6 +67,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'file.middleware.MediaServeMiddleware'
 ]
+#user model 
+AUTH_USER_MODEL = "user.User"
 
 ROOT_URLCONF = 'DMS.urls'
 
@@ -114,6 +124,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+#django rest framework
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+  }
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -140,8 +162,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+#cros origin variables
+
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_CRIDENTIIALS = True
+
+
+# celery
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 CELERY_ACCEPT_CONTENT = ['application/json']
@@ -150,3 +177,5 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 DJANGO_CELERY_BEAT_TZ_AWARE = False
+
+

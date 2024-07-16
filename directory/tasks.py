@@ -1,5 +1,5 @@
 from celery import Celery
-from file.models import File, TotalFileSize
+from file.models import File
 from .models import Directory
 from django.db.models import Q
 from datetime import timedelta
@@ -17,13 +17,15 @@ def periodic_delete():
 
     folders = Directory.objects.filter(is_deleted = True, updated_at__lte=expiration_start)
     files = File.objects.filter(is_deleted = True, updated_at__lte=expiration_start)
-    total_size =TotalFileSize.objects.get(id=1)
-    size = total_size.total_size  
     paths =[] # store paths to delete them after deleting the 
     for file in files:
         if os.path.isfile(file.file.path):
             paths.append(file.file.path)
-        size = size - (file.file.size /1024 /1024)
+        user = file.user
+        totalSize = user.total_size - (file.file.size /1024 /1024)
+        user.total_size = totalSize
+        user.save()
+        
     folders.delete()
     files.delete()
     for path in paths :

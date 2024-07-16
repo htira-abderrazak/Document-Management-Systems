@@ -11,9 +11,9 @@ class MediaServeMiddleware:
         # Check if the request is for a media file
         if request.path.startswith('/uploads/'):
             try:
-                recent_files = Recent.objects.all()
+                recent_files = Recent.objects.filter(user = request.user)
                 file = File.objects.get(file = (request.path).lstrip("/"))
-                if not Recent.objects.filter(files = file).exists():
+                if not Recent.objects.filter(files = file,user = request.user).exists():
                     if recent_files.count() < 10 :
                         Recent(files =file).save()
                     else :

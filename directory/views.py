@@ -4,8 +4,9 @@ from rest_framework import viewsets,status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.permissions import IsAuthenticated
 
-from file.models import File,Recent as File_Recent, TotalFileSize
+from file.models import File,Recent as File_Recent
 from file.serializers import FileSerializer
 
 from .models import Directory, Recent
@@ -18,6 +19,7 @@ from datetime import date
 
 #File Management View (update, delete , create)
 class FolderViewSet(viewsets.ModelViewSet):
+    permission_classes=[IsAuthenticated]
     queryset = Directory.objects.all()
     serializer_class = DirectorySerializer
     def list(self, request, *args, **kwargs):
@@ -27,6 +29,9 @@ class FolderViewSet(viewsets.ModelViewSet):
     # folder soft delete 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if request.user != instance.user :
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         instance.is_deleted = True
         instance.expired_date = date.today()
         instance.save()
@@ -36,11 +41,14 @@ class FolderViewSet(viewsets.ModelViewSet):
 class GetFolder(APIView):
 
     def get(self,request,pk):
-        try:
+        try:        
             folder = Directory.objects.get(id=pk,is_deleted= False)
         except Directory.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        recent_folders = Recent.objects.all()
+        if folder.user != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        recent_folders = Recent.objects.filter(user=request.user)
 
         if not Recent.objects.filter(folders = folder).exists():
             if recent_folders.count() < 10 :
@@ -56,20 +64,23 @@ class GetFolder(APIView):
 
 #Get All the root folders View
 class GetRootFolders(APIView):
+    permission_classes=[IsAuthenticated]
 
     def get(self,request):
 
-        folder = Directory.objects.filter(parent = None,is_deleted= False)
+        folder = Directory.objects.filter(parent = None,is_deleted= False, user = request.user)
 
         folder = DirectorySerializer(folder,many=True)
         return Response(folder.data)
     
 #get the Navigation Pnae View
 class GetNavigationPane(APIView):
+    permission_classes=[IsAuthenticated]
+
     def get(self,request):
 
         
-        folder = Directory.objects.filter(parent = None,is_deleted= False)
+        folder = Directory.objects.filter(parent = None,is_deleted= False, user=request.user)
 
         folder = NavigationPaneSerializer(folder,many = True)
         return Response(folder.data)
@@ -78,10 +89,12 @@ class GetNavigationPane(APIView):
 
 #search files and folder by name
 class SerchByname(APIView):
+    permission_classes=[IsAuthenticated]
+
     def get(self,request,name):
         search_string = name
     
-        folder = Directory.objects.filter(is_deleted= False,name__icontains=search_string)
+        folder = Directory.objects.filter(is_deleted= False,user=request.user,username__icontains=search_string)
         files = File.objects.filter(is_deleted= False,name__icontains=search_string)
         folder = DirectorySerializer(folder,many = True)
         files = FileSerializer(files,many = True)
@@ -89,28 +102,33 @@ class SerchByname(APIView):
     
 # get deleted files and folders
 class GetTrash(APIView):
+    permission_classes=[IsAuthenticated]
+
     def get(self,request):
     
-        folder = Directory.objects.filter(is_deleted= True)
-        files = File.objects.filter(is_deleted= True)
+        folder = Directory.objects.filter(is_deleted= True, user = request.user)
+        files = File.objects.filter(is_deleted= True , user = request.user)
         folder = DirectorySerializer(folder,many = True)
         files = FileSerializer(files,many = True)
         return Response([folder.data]+[files.data])
     
 #get favorite files and folders
 class GetFavorite(APIView):
+    permission_classes=[IsAuthenticated]
+
     def get(self,request):
     
-        folder = Directory.objects.filter(is_deleted= False,favorite = True)
-        files = File.objects.filter(is_deleted= False,favorite = True)
+        folder = Directory.objects.filter(is_deleted= False,favorite = True, user = request.user)
+        files = File.objects.filter(is_deleted= False,favorite = True, user = request.user)
         folder = DirectorySerializer(folder,many = True)
         files = FileSerializer(files,many = True)
         return Response([folder.data]+[files.data])
     
 class GetRecent(APIView):
+    permission_classes=[IsAuthenticated]
 
     def get(self,request):
-        recent_files = File_Recent.objects.all()
+        recent_files = File_Recent.objects.filter(user = request.user)
         recent_folder = Recent.objects.all()
         files = []
         folders= []
@@ -122,17 +140,20 @@ class GetRecent(APIView):
 
 
 class CleanTrash(APIView):
+    permission_classes=[IsAuthenticated]
 
     def delete(self,request):
-        folder = Directory.objects.filter(is_deleted= True)
-        files = File.objects.filter(is_deleted= True)
-        total_size =TotalFileSize.objects.get(id=1)
-        size = total_size.total_size  
+        folder = Directory.objects.filter(is_deleted= True, user = request.user)
+        files = File.objects.filter(is_deleted= True, user = request.user)
+ 
         paths =[] # store paths to delete them after deleting the 
         for file in files:
             if os.path.isfile(file.file.path):
                 paths.append(file.file.path)
-            size = size - (file.file.size /1024 /1024)
+            user = request.user
+            totalSize = user.total_size - (file.file.size /1024 /1024)
+            user.total_size = totalSize
+            user.save()
         folder.delete()
         files.delete()
         for path in paths :
@@ -145,10 +166,11 @@ class CleanTrash(APIView):
         return Response(status=204)
 
 class RestoreFolder(APIView):
+    permission_classes=[IsAuthenticated]
 
     def put(self,request,id):
         try : 
-            folder = Directory.objects.get(id = id)
+            folder = Directory.objects.get(id = id,user = request.user)
 
         except Directory.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
