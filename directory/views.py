@@ -146,6 +146,7 @@ class CleanTrash(APIView):
         folder = Directory.objects.filter(is_deleted= True, user = request.user)
         files = File.objects.filter(is_deleted= True, user = request.user)
         user = request.user
+        size = user.total_size
         paths =[] # store paths to delete them after deleting the 
         for file in files:
             if os.path.isfile(file.file.path):
