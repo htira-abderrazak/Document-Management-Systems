@@ -26,9 +26,10 @@ class Fileviewset(viewsets.ModelViewSet):
 
     #soft delete file
     def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
         if request.user != instance.user :
             return Response(status=status.HTTP_403_FORBIDDEN)        
-        instance = self.get_object()
         instance.is_deleted = True
         instance.expired_date = date.today()
         instance.save()
