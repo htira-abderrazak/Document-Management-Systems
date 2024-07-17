@@ -11,9 +11,9 @@ class DirectorySerializer(serializers.ModelSerializer):
         fields = ['id','name','parent','created_at','updated_at','favorite']
     def create(self, validated_data):
         if validated_data["parent"]:
-            directories = Directory.objects.filter(parent = validated_data["parent"],name = validated_data["name"])
+            directories = Directory.objects.filter(user = self.context['request'].user,parent = validated_data["parent"],name = validated_data["name"])
         else:
-            directories = Directory.objects.filter(parent = None,name = validated_data["name"])
+            directories = Directory.objects.filter(parent = None,name = validated_data["name"],user = self.context['request'].user)
         if(directories.exists()):
             raise serializers.ValidationError(
                 {"name": "this name already exists."}
@@ -29,7 +29,7 @@ class DirectorySerializer(serializers.ModelSerializer):
         if 'name' in validated_data:
             # Validate unique name within the same directory
             if validated_data["name"] != instance.name:  # Check for change
-                directories = Directory.objects.filter(parent = instance.parent,name = validated_data["name"])
+                directories = Directory.objects.filter(parent = instance.parent,name = validated_data["name"],user = self.context['request'].user)
                 if directories.exists():
                     raise serializers.ValidationError({"name": "This name already exists."})
             instance.name = validated_data["name"]
