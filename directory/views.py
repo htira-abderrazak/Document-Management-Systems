@@ -50,9 +50,9 @@ class GetFolder(APIView):
 
         recent_folders = Recent.objects.filter(user=request.user)
 
-        if not Recent.objects.filter(folders = folder).exists():
+        if not recent_folders.filter(folders = folder).exists():
             if recent_folders.count() < 10 :
-                Recent(folders =folder).save()
+                Recent(folders =folder,user = request.user).save()
             else :
                 #delte the oldest folder in recent and add the neww recent folder
                 first = recent_folders.first()
@@ -129,7 +129,7 @@ class GetRecent(APIView):
 
     def get(self,request):
         recent_files = File_Recent.objects.filter(user = request.user)
-        recent_folder = Recent.objects.all()
+        recent_folder = Recent.objects.filter(user = request.user)
         files = []
         folders= []
         for file in recent_files:

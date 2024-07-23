@@ -1,3 +1,4 @@
+from django.http import Http404
 from file.models import File, Recent
 
 
@@ -12,19 +13,20 @@ class MediaServeMiddleware:
         if request.path.startswith('/uploads/'):
             try:
                 
-                file = File.objects.get(file = (request.path).lstrip("/"))
-                recent_files = Recent.objects.filter(user = file.user)
-                if not Recent.objects.filter(files = file,user = request.user).exists():
+                file = File.objects.get(file = request.path[len('/uploads/'):])
+                user=file.user
+                recent_files = Recent.objects.filter(user =user)
+                if not recent_files.filter(files = file).exists():
                     if recent_files.count() < 10 :
-                        Recent(files =file).save()
+                        Recent(files =file,user = user).save()
                     else :
                         #delte the oldest file in recent and add the neww recent file
                         first = recent_files.first()
                         first.delete()
-                        Recent(files =file).save()    
+                        Recent(files =file,user = user).save()    
                 
             except  File.DoesNotExist :
+                # raise Http404("Page not found")
                 return response
-            
         
         return response
