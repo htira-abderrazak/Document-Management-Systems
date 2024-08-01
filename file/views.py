@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 
 from rest_framework import viewsets,status
@@ -47,7 +48,7 @@ class GetTotalSize(APIView):
     def get(self,request):
         
 
-        return Response(request.user.total_size)
+        return JsonResponse({"total-size":request.user.total_size,"max-size": request.user.max_size})
 
 
 class RestoreFile(APIView):
