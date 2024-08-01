@@ -48,7 +48,7 @@ class GetTotalSize(APIView):
     def get(self,request):
         
 
-        return JsonResponse({"total-size":request.user.total_size,"max-size": request.user.max_size})
+        return JsonResponse({"total_size":request.user.total_size,"max_size": request.user.max_size})
 
 
 class RestoreFile(APIView):
