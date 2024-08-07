@@ -1,6 +1,9 @@
+import json
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
+from rest_framework.decorators import permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,11 +11,17 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from DMS import settings
+
 from user.serializers import RegisterSerializer
+
 import requests
+
+import stripe
 
 import environ
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 env = environ.Env()
 environ.Env.read_env()
@@ -49,3 +58,26 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+class Payment(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        user = request.user
+        print(user)
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            amount = data['amount']
+            token = data['token']
+            try:
+                charge = stripe.Charge.create(
+                    amount=int(amount * 100),  
+                    currency='usd',
+                    source=token,
+                    description='Payment for order'
+                )
+                user.max_size= user.max_size+100
+                user.save()
+                return JsonResponse({'success': True})
+            except stripe.error.StripeError as e:
+                return JsonResponse({'success': False, 'error': str(e)})

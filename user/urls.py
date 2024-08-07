@@ -12,5 +12,7 @@ urlpatterns=[
     path('register/',view.RegisterUserAPIView.as_view()),
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('logout/',view.LogoutView.as_view(),name='logoutView')
+    path('logout/',view.LogoutView.as_view(),name='logoutView'),
+    path('payment/', view.Payment.as_view(), name='token_obtain_pair'),
+
 ]
