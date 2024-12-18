@@ -36,9 +36,11 @@ class FileSerializer(serializers.ModelSerializer):
         # Access the file size
         file_size = value.size
         max_file_size = 10 * 1024 * 1024  # 10 MB
-        if file_size > max_file_size or user.total_size > 100:
+        max =user.max_size
+        if file_size > max_file_size or user.total_size > max:
             raise serializers.ValidationError("File size exceeds the allowed limit. (10MB)")
-        user.total_size += (value.size /1024/1024)
+
+        user.total_size += value.size 
         user.save()
         return value
     def get_size(self, obj):

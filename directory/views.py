@@ -147,22 +147,24 @@ class CleanTrash(APIView):
         files = File.objects.filter(is_deleted= True, user = request.user)
         user = request.user
         size = user.total_size
+     
         paths =[] # store paths to delete them after deleting the 
         for file in files:
             if os.path.isfile(file.file.path):
                 paths.append(file.file.path)
 
-            totalSize = user.total_size - (file.file.size /1024 /1024)
-            user.total_size = totalSize
-            user.save()
+            size = size - file.file.size
+
         folder.delete()
         files.delete()
         for path in paths :
             if os.path.isfile(path):
                 os.remove(path)
-        if (size<0):
-            size = 0
-        user.total_size= int(size)
+        if (size<1 and size>0):
+            size = 1
+        elif (size <0):
+            size =0            
+        user.total_size= size
         user.save()
         return Response(status=204)
 
