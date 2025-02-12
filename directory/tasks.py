@@ -22,16 +22,12 @@ def periodic_delete():
         if os.path.isfile(file.file.path):
             paths.append(file.file.path)
         user = file.user
-        totalSize = user.total_size - (file.file.size /1024 /1024)
+        totalSize = user.total_size - file.file.size
         user.total_size = totalSize
-        user.save()
+        file.user.save()
         
     folders.delete()
     files.delete()
     for path in paths :
         if os.path.isfile(path):
             os.remove(path)
-    if (size<0):
-        size = 0
-    total_size.total_size= int(size)
-    total_size.save()
