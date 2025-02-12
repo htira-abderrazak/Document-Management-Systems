@@ -64,7 +64,7 @@ class Payment(APIView):
 
     def post(self, request):
         user = request.user
-        print(user)
+
         if request.method == 'POST':
             data = json.loads(request.body)
             amount = data['amount']
