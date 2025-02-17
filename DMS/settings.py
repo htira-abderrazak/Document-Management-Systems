@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'user',
     'django_celery_beat',
     'corsheaders',
+    'storages'
 
 ]
 
@@ -159,10 +160,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-MEDIA_URL = '/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 
-STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -186,3 +185,30 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 DJANGO_CELERY_BEAT_TZ_AWARE = False
 
 
+#AWS 53 Settings for Django
+
+AWS_ACCESS_KEY_ID = env("AWS_ID")
+
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_KEY")
+
+AWS_STORAGE_BUCKET_NAME = 'dmsfiles' 
+AWS_S3_REGION_NAME = 'eu-north-1'
+
+
+AWS_S3_CUSTOM_DOMAIN = env("AWS_DOMAIN")
+
+#Static files (CSS, JavaScript, Images)
+
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+
+#similarly
+
+#If you have media files, configure MEDIA settings
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+
+AWS_DEFAULT_ACL = 'public-read'
