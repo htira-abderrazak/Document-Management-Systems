@@ -76,7 +76,7 @@ class Payment(APIView):
                     source=token,
                     description='Payment for order'
                 )
-                user.max_size= user.max_size+100
+                user.max_size= user.max_size+104857600
                 user.save()
                 return JsonResponse({'success': True})
             except stripe.error.StripeError as e:
