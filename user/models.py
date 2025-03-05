@@ -10,4 +10,4 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     total_size = models.PositiveIntegerField(default=0)
-    max_size = models.PositiveIntegerField(default=100)
+    max_size = models.PositiveIntegerField(default=104857600)
