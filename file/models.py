@@ -20,9 +20,8 @@ def get_upload_path(instance, filename):
     upload_path = os.path.join(year_folder, month_folder, day_folder)
 
     # Ensure the directory exists
-    full_path = os.path.join(settings.MEDIA_ROOT, upload_path)
-    if not os.path.exists(full_path):
-        os.makedirs(full_path)
+    full_path = os.path.join("uploads/", upload_path)
+
 
     return os.path.join(upload_path, filename)
 
