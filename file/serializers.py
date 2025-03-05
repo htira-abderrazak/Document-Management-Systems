@@ -37,9 +37,10 @@ class FileSerializer(serializers.ModelSerializer):
         file_size = value.size
         max_file_size = 10 * 1024 * 1024  # 10 MB
         max =user.max_size
-        if file_size > max_file_size or user.total_size > max:
+        if file_size > max_file_size :
             raise serializers.ValidationError("File size exceeds the allowed limit. (10MB)")
-
+        if user.total_size > max :
+            raise serializers.ValidationError("You have exceeded your storage limit.")
         user.total_size += value.size 
         user.save()
         return value
