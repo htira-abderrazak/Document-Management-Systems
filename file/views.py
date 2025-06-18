@@ -10,6 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import FileSerializer, FileSerializerUpdate
 from .models import File
 from datetime import date
+
+from directory.models import Directory
 # Create your views here.
 
 #file management View (create, update, Delete)
@@ -62,5 +64,24 @@ class RestoreFile(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         if file.is_deleted == True :
             file.is_deleted = False
+            file.save()
+        return Response(status=204)
+    
+class MoveFile(APIView):
+    permission_classes=[IsAuthenticated]
+    def put(self,request):
+        data = request.data
+        file_id= data.get('file')
+        folder_id= data.get('folder')
+
+        try :
+            file = File.objects.get(id = file_id,user=  request.user)
+            folder = Directory.objects.get(id = folder_id,user=  request.user)
+
+        except File.DoesNotExist or Directory.DoesNotExist:
+
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if file.directory != folder:
+            file.directory= folder
             file.save()
         return Response(status=204)
