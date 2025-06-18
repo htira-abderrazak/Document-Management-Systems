@@ -11,7 +11,7 @@ from file.serializers import FileSerializer
 
 from .models import Directory, Recent
 
-from .serializers import DirectorySerializer,DirectoryListSerializer,NavigationPaneSerializer
+from .serializers import DirectorySerializer,DirectoryListSerializer,NavigationPaneSerializer,FoldeTreeSerializer
 
 from datetime import date
 
@@ -181,3 +181,14 @@ class RestoreFolder(APIView):
             folder.is_deleted = False
             folder.save()
         return Response(status=204)
+    
+class GetFoldersTree(APIView):
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request):
+
+        
+        folder = Directory.objects.filter(parent = None,is_deleted= False, user=request.user)
+
+        folder = FoldeTreeSerializer(folder,many = True)
+        return Response(folder.data)

@@ -13,7 +13,8 @@ urlpatterns=[
     path("favorite/",view.GetFavorite.as_view()),
     path("recent/",view.GetRecent.as_view()),
     path("clean/",view.CleanTrash.as_view()),
-    path("restore-folder/<uuid:id>/",view.RestoreFolder.as_view())
+    path("restore-folder/<uuid:id>/",view.RestoreFolder.as_view()),
+    path("folderstree/", view.GetFoldersTree.as_view())
 
 
 ]

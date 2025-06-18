@@ -81,3 +81,17 @@ class NavigationPaneSerializer(serializers.ModelSerializer):
             'files': files,
         }
     
+class FoldeTreeSerializer(serializers.ModelSerializer):
+    content = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Directory
+        fields = ['id','name','content']
+    def get_content(self, obj):
+        folders = Directory.objects.filter(parent = obj,is_deleted=False)
+        if folders.exists():
+            folders = FoldeTreeSerializer(folders,many = True).data
+
+        return folders
+        
+    
