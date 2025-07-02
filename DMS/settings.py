@@ -215,3 +215,6 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
 AWS_DEFAULT_ACL = 'public-read'
+
+
+LLM_API_KEY=env("LLM_API_KEY")
