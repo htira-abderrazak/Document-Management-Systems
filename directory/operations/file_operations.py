@@ -9,9 +9,14 @@ class OperationError(Exception):
 def create_folder(name, parent_id, user):
     if not name or not user:
         raise OperationError("no name or user")
+    
+    try : 
+       Directory.objects.get(parent=parent_id, name = name,is_deleted=False)
+    except Directory.DoesNotExist:
+        raise OperationError(f"folder with name {name} does not exist")
 
     try : 
-        parent = Directory.objects.get(id=parent_id)
+        parent = Directory.objects.get(id=parent_id,is_deleted=False)
     except Directory.DoesNotExist:
         raise OperationError(f"folder {parent_id} does not exist")
     Directory.objects.create(name=name,parent=parent,user=user)
@@ -21,7 +26,7 @@ def update_folder(folder_id, new_name):
     if not new_name :
         raise OperationError("no name or user")
     try : 
-        folder = Directory.objects.get(id=folder_id)
+        folder = Directory.objects.get(id=folder_id,is_deleted=False)
     except Directory.DoesNotExist:
         raise OperationError(f"folder {folder_id} does not exist")
     folder.name = new_name
@@ -30,8 +35,8 @@ def update_folder(folder_id, new_name):
 def move_folder_to_existing_folder(folder_id, destination_id):
 
     try : 
-        folder = Directory.objects.get(id=folder_id)
-        destination_folder = Directory.objects.get(id=destination_id)
+        folder = Directory.objects.get(id=folder_id,is_deleted=False)
+        destination_folder = Directory.objects.get(id=destination_id,is_deleted=False)
     except Directory.DoesNotExist:
         raise OperationError(f"folder {folder_id} or {destination_id} does not exist")
 
@@ -43,13 +48,13 @@ def move_folder_after_creating_destination_folder(folder_id, new_folder_name, pa
         raise OperationError("no name or user")
 
     try : 
-        parent = Directory.objects.get(id=parent_id)
-        folder = Directory.objects.get(id=folder_id)
+        parent = Directory.objects.get(id=parent_id,is_deleted=False)
+        folder = Directory.objects.get(id=folder_id,is_deleted=False)
     except Directory.DoesNotExist:
-        raise OperationError()
+        raise OperationError(f"folder {folder_id} or parent {parent_id} does not exist")
     # Check if the distination folder already exist
     try :
-        existed_folder = Directory.objects.get(name=new_folder_name,parent=parent_id)
+        existed_folder = Directory.objects.get(name=new_folder_name,parent=parent_id,is_deleted=False)
     except Directory.DoesNotExist:
         # If the distination folder exist
         Directory.objects.create(name=new_folder_name, parent=parent_id,user =user)
@@ -64,9 +69,9 @@ def move_folder_after_creating_destination_folder(folder_id, new_folder_name, pa
 def delete_folder(folder_id):
 
     try :
-        folder = Directory.objects.get(id =folder_id)
+        folder = Directory.objects.get(id =folder_id,is_deleted=False)
     except Directory.DoesNotExist :
-        raise OperationError()
+        raise OperationError(f"folder {folder_id} does not exist")
     folder.is_deleted=True
     folder.save()
 
@@ -74,9 +79,9 @@ def delete_folder(folder_id):
 def favorite_folder(folder_id, is_favorite):
 
     try :
-        folder = Directory.objects.get(id =folder_id)
+        folder = Directory.objects.get(id =folder_id,is_deleted=False)
     except Directory.DoesNotExist :
-        raise OperationError()
+        raise OperationError(f"folder {folder_id} does not exist")
     folder.favorite =is_favorite
     folder.save()
 
@@ -86,18 +91,18 @@ def favorite_folder(folder_id, is_favorite):
 def favorite_file(file_id, is_favorite):
 
     try :
-        file = File.objects.get(id =file_id)
+        file = File.objects.get(id =file_id,is_deleted=False)
     except File.DoesNotExist :
-        raise OperationError()
+        raise OperationError(f"file {file_id} does not exist")
     file.favorite =is_favorite
     file.save()
 
 def delete_file(file_id):
 
     try :
-        file = File.objects.get(id =file_id)
+        file = File.objects.get(id =file_id,is_deleted=False)
     except File.DoesNotExist :
-        raise OperationError()
+        raise OperationError(f"file {file_id} does not exist")
     file.is_deleted=True
     file.save()
 
@@ -106,16 +111,19 @@ def move_file_after_creating_destination_folder(file_id, new_folder_name, parent
         raise OperationError(f"no name or user")
 
     try : 
-        directory = Directory.objects.get(id=parent_id)
-        file = File.objects.get(id=file_id)
-    except Directory.DoesNotExist or File.DoesNotExist:
-        raise OperationError(f"file {file_id} or folder {parent_id} not exist")
+        directory = Directory.objects.get(id=parent_id,is_deleted=False)
+        file = File.objects.get(id=file_id,is_deleted=False)
+    except Directory.DoesNotExist:
+        raise OperationError(f"folder {parent_id} does not exist")
+    except File.DoesNotExist:
+        raise OperationError(f"file {file_id} does not exist")
+
     # Check if the distination folder already exist
     try :
-        existed_file = Directory.objects.get(name=new_folder_name,parent=parent_id)
+        existed_file = Directory.objects.get(name=new_folder_name,parent=parent_id,is_deleted=False)
     except Directory.DoesNotExist:
         # If the distination folder exist
-        directory.objects.create(name=new_folder_name, parent=parent_id,user =user)
+        Directory.objects.create(name=new_folder_name, parent=parent_id,user =user,is_deleted=False)
         file.directory = directory
         file.save()
         return None
@@ -127,19 +135,21 @@ def move_file_to_existing_folder(file_id, destination_id):
 
     try : 
         file = File.objects.get(id=file_id)
-        destination_folder = Directory.objects.get(id=destination_id)
+        destination_folder = Directory.objects.get(id=destination_id,is_deleted=False)
     except File.DoesNotExist:
-        raise OperationError()
+        raise OperationError(f"file {file_id} does not exist")
+    except Directory.DoesNotExist:
+        raise OperationError(f"destination folder {destination_id} does not exist")
 
     file.parent = destination_folder
     file.save()
 
 def update_file(file_id, new_name):
     if not new_name :
-        raise OperationError()
+        raise OperationError("no name provided for update")
     try : 
-        file = File.objects.get(id=file_id)
+        file = File.objects.get(id=file_id,is_deleted=False)
     except File.DoesNotExist:
-        raise OperationError()
+        raise OperationError(f"file {file_id} does not exist")
     file.name = new_name
     file.save()
