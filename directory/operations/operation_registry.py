@@ -1,7 +1,7 @@
 
 from .file_operations import *
 
-operation_FOLDER_REGISTRY = {
+OPERATION_FOLDER_REGISTRY = {
     "create_folder": create_folder,
     "update_folder": update_folder,
     "move_folder_to_existing_folder": move_folder_to_existing_folder,
