@@ -54,7 +54,7 @@ def periodic_delete():
             print(f"Error deleting file from S3: {e}")
 
 @app.task
-def MCP(message,data_file,user):
+def MCP(message,data_file,user,id):
     User = get_user_model()
     try :
         user = User.objects.get(id=user)
@@ -107,6 +107,9 @@ def MCP(message,data_file,user):
         if "user" in operation.__code__.co_varnames:
             params["user"] = user
 
+        # Inject the parent direvtory if the function expects it
+        if "parent_id" in operation.__code__.co_varnames:
+            params["parent_id"] = id
         try:
             operation(**params)  # operation is executed here
         except Exception as e:
