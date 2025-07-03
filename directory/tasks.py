@@ -85,12 +85,20 @@ def MCP(message,data_file,user,id):
     data = response.json()
     data = data["choices"][0]["message"]["content"]
 
+    data = data.strip()
+    if data.startswith("```json"):
+        data = data[7:]  # remove '```json\n'
+    elif data.startswith("```"):
+        data = data[3:]  # remove '```\n'
+    if data.endswith("```"):
+        data = data[:-3]  # remove ending '```'
 
-    if isinstance(data, str):
-        try:
-            data = json.loads(data)
-        except json.JSONDecodeError as e:
-            print(f"Invalid JSON: {e}")
+    print(data)
+    print(type(data))
+    try:
+        data = json.loads(data)
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON: {e}")
            
 
 
