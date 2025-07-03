@@ -106,7 +106,7 @@ def MCP(message,data_file,user,id):
         operation_name = list(item.keys())[0]  
         params = item[operation_name]          
 
-        operation = OPERATION_FOLDER_REGISTRY.get(operation_name)
+        operation = OPERATION_REGISTRY.get(operation_name)
         if not operation:
             print(f"Unknown operation: {operation_name}")
             continue
