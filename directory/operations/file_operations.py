@@ -11,11 +11,6 @@ def create_folder(name, parent_id, user):
         raise OperationError("no name or user")
     
     try : 
-       Directory.objects.get(parent=parent_id, name = name,is_deleted=False)
-    except Directory.DoesNotExist:
-        raise OperationError(f"folder with name {name} does not exist")
-
-    try : 
         parent = Directory.objects.get(id=parent_id,is_deleted=False)
     except Directory.DoesNotExist:
         raise OperationError(f"folder {parent_id} does not exist")
