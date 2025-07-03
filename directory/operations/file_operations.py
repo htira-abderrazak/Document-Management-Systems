@@ -27,18 +27,18 @@ def update_folder(folder_id, new_name):
     folder.name = new_name
     folder.save()
 
-def move_folder_to_existing_folder(folder_id, destination_id):
+def move_folder(folder_id, folder_destination_id):
 
     try : 
         folder = Directory.objects.get(id=folder_id,is_deleted=False)
-        destination_folder = Directory.objects.get(id=destination_id,is_deleted=False)
+        destination_folder = Directory.objects.get(id=folder_destination_id,is_deleted=False)
     except Directory.DoesNotExist:
-        raise OperationError(f"folder {folder_id} or {destination_id} does not exist")
+        raise OperationError(f"folder {folder_id} or {folder_destination_id} does not exist")
 
     folder.parent = destination_folder
     folder.save()
 
-def move_folder_after_creating_destination_folder(folder_id, new_folder_name, parent_id, user) :
+def move_folder_and_create_destination(folder_id, new_folder_name, parent_id, user) :
     if not new_folder_name or not user:
         raise OperationError("no name or user")
 
@@ -101,7 +101,7 @@ def delete_file(file_id):
     file.is_deleted=True
     file.save()
 
-def move_file_after_creating_destination_folder(file_id, new_folder_name, parent_id, user) :
+def move_file_and_create_destination(file_id, new_folder_name, parent_id, user) :
     if not new_folder_name or not user:
         raise OperationError(f"no name or user")
 
@@ -126,15 +126,15 @@ def move_file_after_creating_destination_folder(file_id, new_folder_name, parent
     file.save()
 
 
-def move_file_to_existing_folder(file_id, destination_id):
+def move_file(file_id, folder_destination_id):
 
     try : 
         file = File.objects.get(id=file_id)
-        destination_folder = Directory.objects.get(id=destination_id,is_deleted=False)
+        destination_folder = Directory.objects.get(id=folder_destination_id,is_deleted=False)
     except File.DoesNotExist:
         raise OperationError(f"file {file_id} does not exist")
     except Directory.DoesNotExist:
-        raise OperationError(f"destination folder {destination_id} does not exist")
+        raise OperationError(f"destination folder {folder_destination_id} does not exist")
 
     file.directory = destination_folder
     file.save()
