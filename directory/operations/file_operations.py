@@ -122,7 +122,7 @@ def move_file_after_creating_destination_folder(file_id, new_folder_name, parent
         file.directory = created_folder
         file.save()
         return None
-    file.parent = existed_file
+    file.directory = existed_file
     file.save()
 
 
@@ -136,7 +136,7 @@ def move_file_to_existing_folder(file_id, destination_id):
     except Directory.DoesNotExist:
         raise OperationError(f"destination folder {destination_id} does not exist")
 
-    file.parent = destination_folder
+    file.directory = destination_folder
     file.save()
 
 def update_file(file_id, new_name):
