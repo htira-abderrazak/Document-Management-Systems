@@ -13,7 +13,7 @@ import boto3
 import requests
 import json
 
-from .operations.operation_registry import OPERATION_FOLDER_REGISTRY
+from .operations.operation_registry import OPERATION_REGISTRY
 
 from django.contrib.auth import get_user_model
 
