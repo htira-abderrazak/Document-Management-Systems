@@ -52,8 +52,8 @@ def move_folder_after_creating_destination_folder(folder_id, new_folder_name, pa
         existed_folder = Directory.objects.get(name=new_folder_name,parent=parent_id,is_deleted=False)
     except Directory.DoesNotExist:
         # If the distination folder exist
-        Directory.objects.create(name=new_folder_name, parent=parent_id,user =user)
-        folder.parent = parent
+        new_folder=Directory.objects.create(name=new_folder_name, parent=parent_id,user =user)
+        folder.parent = new_folder
         folder.save()
         return None
     folder.parent = existed_folder
@@ -118,8 +118,8 @@ def move_file_after_creating_destination_folder(file_id, new_folder_name, parent
         existed_file = Directory.objects.get(name=new_folder_name,parent=parent_id,is_deleted=False)
     except Directory.DoesNotExist:
         # If the distination folder exist
-        Directory.objects.create(name=new_folder_name, parent=parent_id,user =user,is_deleted=False)
-        file.directory = directory
+        created_folder=Directory.objects.create(name=new_folder_name, parent=parent_id,user =user)
+        file.directory = created_folder
         file.save()
         return None
     file.parent = existed_file
