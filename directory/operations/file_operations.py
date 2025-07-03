@@ -49,10 +49,10 @@ def move_folder_and_create_destination(folder_id, new_folder_name, parent_id, us
         raise OperationError(f"folder {folder_id} or parent {parent_id} does not exist")
     # Check if the distination folder already exist
     try :
-        existed_folder = Directory.objects.get(name=new_folder_name,parent=parent_id,is_deleted=False)
+        existed_folder = Directory.objects.get(name=new_folder_name,parent=parent,is_deleted=False)
     except Directory.DoesNotExist:
         # If the distination folder exist
-        new_folder=Directory.objects.create(name=new_folder_name, parent=parent_id,user =user)
+        new_folder=Directory.objects.create(name=new_folder_name, parent=parent,user =user)
         folder.parent = new_folder
         folder.save()
         return None
@@ -115,10 +115,10 @@ def move_file_and_create_destination(file_id, new_folder_name, parent_id, user) 
 
     # Check if the distination folder already exist
     try :
-        existed_file = Directory.objects.get(name=new_folder_name,parent=parent_id,is_deleted=False)
+        existed_file = Directory.objects.get(name=new_folder_name,parent=directory,is_deleted=False)
     except Directory.DoesNotExist:
         # If the distination folder exist
-        created_folder=Directory.objects.create(name=new_folder_name, parent=parent_id,user =user)
+        created_folder=Directory.objects.create(name=new_folder_name, parent=directory,user =user)
         file.directory = created_folder
         file.save()
         return None
