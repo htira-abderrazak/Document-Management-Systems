@@ -218,3 +218,15 @@ AWS_DEFAULT_ACL = 'public-read'
 
 
 LLM_API_KEY=env("LLM_API_KEY")
+
+
+ASGI_APPLICATION = 'DMS.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
+}

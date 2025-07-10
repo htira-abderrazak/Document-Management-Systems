@@ -139,9 +139,10 @@ GitHub.sublime-settings
 
 uploads/*
 
-#local commands
+# Development envirement
 
 run.bat
 makemigration.bat
 migrate.bat
 activate.bat
+uvi.bat

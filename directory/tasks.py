@@ -179,4 +179,20 @@ def MCP(message,data_file,user,id):
         except Exception as e:
             print(f"Error executing {operation_name}: {e}")
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
+@app.task
+def process_message_with_llm(user_id, message):
+    # Replace this with your LLM integration (e.g., OpenAI, local model, etc.)
+    response = f"Echo: {message}"  # simulate LLM processing
+
+    # Send back to WebSocket
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'chat_{user_id}',
+        {
+            'type': 'send_llm_response',
+            'response': response
+        }
+    )
