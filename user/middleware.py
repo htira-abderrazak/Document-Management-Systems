@@ -11,12 +11,26 @@ User = get_user_model()
 @database_sync_to_async
 def get_user_from_token(token_key):
     try:
+        # Create AccessToken instance
         access_token = AccessToken(token_key)
+        
+        # Explicitly verify the token (includes expiration check)
+        access_token.verify()
+        
+        # If we get here, token is valid and not expired
         user_id = access_token['user_id']
-        return User.objects.get(id=user_id)
-    except (InvalidToken, TokenError, User.DoesNotExist):
+        user = User.objects.get(id=user_id)
+        
+        # Double-check that user is active
+        if user.is_active:
+            return user
+        else:
+            return AnonymousUser()
+            
+    except (InvalidToken, TokenError, User.DoesNotExist, KeyError, Exception) as e:
+        # Log the error for debugging
+        print(f"Token validation failed: {e}")
         return AnonymousUser()
-
 class JWTAuthMiddleware:
     def __init__(self, app):
         self.app = app
