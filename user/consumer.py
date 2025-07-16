@@ -24,13 +24,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
+        user = self.scope['user']
+
+        if not user.is_authenticated:
+            # Optionally close connection or ignore the message
+            await self.close()
+            return
         from directory.tasks import process_message_with_llm
         data = json.loads(text_data)
         message = data['message']
-        user_id = self.user_id
+        
 
         # Call Celery task
-        process_message_with_llm.delay(user_id, message)
+        process_message_with_llm.delay(user.id, message)
 
     async def send_llm_response(self, event):
         response = event['response']
