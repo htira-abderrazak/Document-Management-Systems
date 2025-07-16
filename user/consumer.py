@@ -32,11 +32,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close(code=4001)  # Custom close code for authentication failure
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
-
+        room_group_name = getattr(self, 'room_group_name', None)
+        if room_group_name:
+            await self.channel_layer.group_discard(
+                room_group_name,
+                self.channel_name
+            )
+            print(f"User left room: {room_group_name}")
     async def receive(self, text_data):
         user = self.scope['user']
 
