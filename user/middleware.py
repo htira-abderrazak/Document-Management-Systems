@@ -8,6 +8,8 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 User = get_user_model()
 
+
+# Middleware  for Websocket handshake
 @database_sync_to_async
 def get_user_from_token(token_key):
     try:
