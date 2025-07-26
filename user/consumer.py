@@ -1,10 +1,21 @@
 
 # user/consumers.py
-
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
-from asgiref.sync import async_to_sync
 
+from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.exceptions import StopConsumer
+
+# lazily import the serializer and the task once and cache it to avoid Django initialization errors 
+from functools import lru_cache
+@lru_cache(maxsize=1)
+def get_directory_serializer():
+    from directory.serializers import DirectoryListSerializer
+    return DirectoryListSerializer
+
+@lru_cache(maxsize=1)
+def get_process_message_with_llm():
+    from directory.tasks import process_message_with_llm
+    return process_message_with_llm
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -42,16 +53,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         user = self.scope['user']
 
-        if not user.is_authenticated:
-            # Optionally close connection or ignore the message
-            await self.close()
-            return
-        from directory.tasks import process_message_with_llm
-        data = json.loads(text_data)
-        message = data['message']
-        
+        try:
+            data = json.loads(text_data)
+            message = data['message']
+            id = data['id']
+            data_content = data['data']
 
-        # Call Celery task
+        except json.JSONDecodeError or KeyError :
+            await self.close(code=1008)  
+            raise StopConsumer("Invalid input")
+                    
+        DirectoryListSerializer = get_directory_serializer()
+        serialized_data=DirectoryListSerializer(data=data_content)
+        if not serialized_data.is_valid():
+            await self.close(code=1008)
+            raise StopConsumer("Invalid serializer data")
+        
+        process_message_with_llm = get_process_message_with_llm()
         process_message_with_llm.delay(user.id, message)
 
     async def send_llm_response(self, event):
