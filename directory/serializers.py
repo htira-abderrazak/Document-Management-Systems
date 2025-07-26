@@ -47,6 +47,7 @@ class DirectoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Directory
         fields = ['adress','folders','files','id','updated_at','created_at']
+    # Adress of the folder all the parents behind the current folder to the root 
     def get_adress(self, obj):
         adress = []
         current_folder = obj
