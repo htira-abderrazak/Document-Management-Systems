@@ -17,6 +17,9 @@ from .operations.operation_registry import OPERATION_REGISTRY
 
 from django.contrib.auth import get_user_model
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 app = Celery()
 
 #define a 
@@ -55,6 +58,8 @@ def periodic_delete():
 
 @app.task
 def MCP(message,data_file,user,id):
+    channel_layer = get_channel_layer()
+
     User = get_user_model()
     try :
         user = User.objects.get(id=user)
@@ -69,7 +74,7 @@ def MCP(message,data_file,user,id):
 
         },
         data=json.dumps({
-            "model": "deepseek/deepseek-chat-v3-0324:free",
+            "model": "google/gemini-2.0-flash-lite-001",
 
             "messages": [
                 {
@@ -137,28 +142,63 @@ def MCP(message,data_file,user,id):
             ]   
             })
         )
-    data = response.json()
-  
     
-    
-    data = data["choices"][0]["message"]["content"]
+    data = response.json() 
+    try: 
+        # Parse the string as JSON
+        message_content = data["choices"][0]["message"]["content"]
 
-    data = data.strip()
-    if data.startswith("```json"):
-        data = data[7:]  # remove '```json\n'
-    elif data.startswith("```"):
-        data = data[3:]  # remove '```\n'
-    if data.endswith("```"):
-        data = data[:-3]  # remove ending '```'
+    except (KeyError, IndexError, TypeError) as e:
+        print(f"Malformed LLM response structure: {e}, full response: {data}")
+        async_to_sync(channel_layer.group_send)(
+            f'chat_{user.id}',
+            {
+                'type': 'send_error_response',
+                'response': f"error"
+            }
+        )
+        return 
+    if not message_content or not isinstance(message_content, str):
+        print(f"Empty or invalid message content: {message_content}")
+        async_to_sync(channel_layer.group_send)(
+            f'chat_{user.id}',
+            {
+                'type': 'send_error_response',
+                'response': f"error"
+            }
+        )
+        return 
+
+
+
+
+    # Strip potential markdown formatting
+    cleaned_data = message_content.strip()
+    if cleaned_data.startswith("```json"):
+        cleaned_data = cleaned_data[7:]
+    elif cleaned_data.startswith("```"):
+        cleaned_data = cleaned_data[3:]
+    if cleaned_data.endswith("```"):
+        cleaned_data = cleaned_data[:-3]
 
     try:
-        data = json.loads(data)
+        content_json = json.loads(cleaned_data)
+
+        user_message = content_json["message"]
     except json.JSONDecodeError as e:
-        print(f"Invalid JSON: {e}")
+        print(f"Invalid JSON format in message_content: {e}\nRaw content: {cleaned_data}")
+        async_to_sync(channel_layer.group_send)(
+            f'chat_{user.id}',
+            {
+                'type': 'send_error_response',
+                'response': f"error"
+            }
+        )
+        return 
            
 
 
-    for item in data.get("operations", []):
+    for item in content_json.get("operations", []):
         operation_name = list(item.keys())[0]  
         params = item[operation_name]          
 
@@ -179,20 +219,13 @@ def MCP(message,data_file,user,id):
         except Exception as e:
             print(f"Error executing {operation_name}: {e}")
 
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 
-@app.task
-def process_message_with_llm(user_id, message):
-    # Replace this with your LLM integration (e.g., OpenAI, local model, etc.)
-    response = f"Echo: {message}"  # simulate LLM processing
-
-    # Send back to WebSocket
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        f'chat_{user_id}',
+        f'chat_{user.id}',
         {
             'type': 'send_llm_response',
-            'response': response
+            'response': f"{user_message}"
         }
     )
+
