@@ -59,7 +59,8 @@ def periodic_delete():
 @app.task
 def MCP(message,data_file,user,id):
     channel_layer = get_channel_layer()
-
+    # Operations exist or not in the llm response
+    operation_exist = False
     User = get_user_model()
     try :
         user = User.objects.get(id=user)
@@ -154,7 +155,9 @@ def MCP(message,data_file,user,id):
             f'chat_{user.id}',
             {
                 'type': 'send_error_response',
-                'response': f"error"
+                'response': f"error",
+                'reload': operation_exist
+
             }
         )
         return 
@@ -164,7 +167,9 @@ def MCP(message,data_file,user,id):
             f'chat_{user.id}',
             {
                 'type': 'send_error_response',
-                'response': f"error"
+                'response': f"error",
+                'reload': operation_exist
+
             }
         )
         return 
@@ -191,7 +196,8 @@ def MCP(message,data_file,user,id):
             f'chat_{user.id}',
             {
                 'type': 'send_error_response',
-                'response': f"error"
+                'response': f"error",
+                'reload': operation_exist
             }
         )
         return 
@@ -206,7 +212,7 @@ def MCP(message,data_file,user,id):
         if not operation:
             print(f"Unknown operation: {operation_name}")
             continue
-
+        operation_exist=True
         # Inject user if the function expects it
         if "user" in operation.__code__.co_varnames:
             params["user"] = user
@@ -225,7 +231,9 @@ def MCP(message,data_file,user,id):
         f'chat_{user.id}',
         {
             'type': 'send_llm_response',
-            'response': f"{user_message}"
+            'response': f"{user_message}",
+            'reload': operation_exist
+
         }
     )
 

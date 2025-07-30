@@ -74,12 +74,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def send_llm_response(self, event):
         response = event['response']
+        reload = event.get('reload')
 
         await self.send(text_data=json.dumps({
-            'response': response
+            'response': response,
+            'reload':reload
+
         }))
     async def send_error_response(self, event):
         error_message = event['response']
+        reload = event.get('reload')
+
         await self.send(text_data=json.dumps({
-            'error': error_message
+            'error': error_message,
+            'reload':reload
         }))
