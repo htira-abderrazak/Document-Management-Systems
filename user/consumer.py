@@ -14,8 +14,8 @@ def get_directory_serializer():
 
 @lru_cache(maxsize=1)
 def get_process_message_with_llm():
-    from directory.tasks import process_message_with_llm
-    return process_message_with_llm
+    from directory.tasks import MCP
+    return MCP
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -68,13 +68,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not serialized_data.is_valid():
             await self.close(code=1008)
             raise StopConsumer("Invalid serializer data")
-        
+
         process_message_with_llm = get_process_message_with_llm()
-        process_message_with_llm.delay(user.id, message)
+        process_message_with_llm.delay(message,data_content,user.id,id)
 
     async def send_llm_response(self, event):
         response = event['response']
 
         await self.send(text_data=json.dumps({
             'response': response
+        }))
+    async def send_error_response(self, event):
+        error_message = event['response']
+        await self.send(text_data=json.dumps({
+            'error': error_message
         }))
