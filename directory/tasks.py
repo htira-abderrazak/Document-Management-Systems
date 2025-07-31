@@ -11,6 +11,8 @@ from datetime import timedelta
 import boto3
 
 import requests
+from requests.exceptions import RequestException, Timeout, HTTPError, ConnectionError
+
 import json
 
 from .operations.operation_registry import OPERATION_REGISTRY
@@ -21,7 +23,10 @@ from django.contrib.auth import get_user_model
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+import logging
+
 app = Celery()
+logger = logging.getLogger(__name__)
 
 #define a 
 @app.task
@@ -59,7 +64,6 @@ def periodic_delete():
 
 @app.task
 def MCP(message,data_file,user,id):
-    channel_layer = get_channel_layer()
     # Operations exist or not in the llm response
     operation_exist = False
     User = get_user_model()
@@ -68,57 +72,72 @@ def MCP(message,data_file,user,id):
     except User.DoesNotExist :
         print("unkown User")
         return None
-    response = requests.post(
-        url="https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {settings.LLM_API_KEY}",
-            "Content-Type": "application/json"
+    try:
+        response = requests.post(
+            url="https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {settings.LLM_API_KEY}",
+                "Content-Type": "application/json"
 
-        },
-        data=json.dumps({
-            "model": "google/gemini-2.0-flash-lite-001",
+            },
+            data=json.dumps({
+                "model": "deepseek/deepseek-chat-v3-0324:free",
 
-            "messages": [
-                {
-                    "role": "system",
-                    "content": prompt(data_file)
-                },
-                {
-                    "role": "user",
-                    "content": message
-                }
-            ]   
-            })
-        )
-    
-    data = response.json() 
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": prompt(data_file)
+                    },
+                    {
+                        "role": "user",
+                        "content": message
+                    }
+                ]   
+                })
+            )
+        
+        data = response.json() 
+
+    except Timeout:
+        logger.error("Request to OpenRouter timed out.")
+        send_error_message(operation_exist,user.id)
+        return {"error": "The request timed out."}
+
+    except ConnectionError:
+        logger.error("Failed to connect to OpenRouter.")
+        send_error_message(operation_exist,user.id)
+        return {"error": "Connection error."}
+
+    except HTTPError as e:
+        logger.error(f"HTTP error occurred: {e} - Response: {e.response.text}")
+        send_error_message(operation_exist,user.id)
+        return {"error": f"HTTP error: {e.response.status_code}"}
+
+    except RequestException as e:
+        logger.error(f"General Request exception: {str(e)}")
+        send_error_message(operation_exist,user.id)
+        return {"error": "A request exception occurred."}
+
+    except ValueError as e:
+        logger.error(f"JSON decoding failed: {str(e)}")
+        send_error_message(operation_exist,user.id)
+        return {"error": "Failed to parse JSON response."}
+
+    except Exception as e:
+        logger.exception("Unexpected error in OpenRouter task.")
+        send_error_message(operation_exist,user.id)
+        return {"error": "Unexpected error occurred."}
     try: 
         # Parse the string as JSON
         message_content = data["choices"][0]["message"]["content"]
 
     except (KeyError, IndexError, TypeError) as e:
         print(f"Malformed LLM response structure: {e}, full response: {data}")
-        async_to_sync(channel_layer.group_send)(
-            f'chat_{user.id}',
-            {
-                'type': 'send_error_response',
-                'response': f"error",
-                'reload': operation_exist
-
-            }
-        )
+        send_error_message(operation_exist,user.id)
         return 
     if not message_content or not isinstance(message_content, str):
         print(f"Empty or invalid message content: {message_content}")
-        async_to_sync(channel_layer.group_send)(
-            f'chat_{user.id}',
-            {
-                'type': 'send_error_response',
-                'response': f"error",
-                'reload': operation_exist
-
-            }
-        )
+        send_error_message(operation_exist,user.id)
         return 
 
 
@@ -139,14 +158,7 @@ def MCP(message,data_file,user,id):
         user_message = content_json["message"]
     except json.JSONDecodeError as e:
         print(f"Invalid JSON format in message_content: {e}\nRaw content: {cleaned_data}")
-        async_to_sync(channel_layer.group_send)(
-            f'chat_{user.id}',
-            {
-                'type': 'send_error_response',
-                'response': f"error",
-                'reload': operation_exist
-            }
-        )
+        send_error_message(operation_exist,user.id)
         return 
            
 
@@ -173,14 +185,28 @@ def MCP(message,data_file,user,id):
             print(f"Error executing {operation_name}: {e}")
 
 
+    send_meesage(user_message,operation_exist,user.id)
+
+
+def send_meesage(user_message,operations_exist,id):
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        f'chat_{user.id}',
+        f'chat_{id}',
         {
             'type': 'send_llm_response',
             'response': f"{user_message}",
-            'reload': operation_exist
+            'reload': operations_exist
 
         }
     )
 
+def send_error_message(operations_exist,id):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'chat_{id}',
+        {
+            'type': 'send_error_response',
+            'response': f"error",
+            'reload': operations_exist
+        }
+    )
