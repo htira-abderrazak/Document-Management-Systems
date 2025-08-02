@@ -37,6 +37,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             
             await self.accept()
+            await self.send(text_data=json.dumps({
+            'response': "Hi! I’m your assistant for managing files and folders in this directory. You can ask me to move, rename, delete, or favorite files and folders here.",
+            'reload':False
+
+        }))
             print(f"Connection accepted for user: {user.id}")
         else:
             print("Connection rejected - user not authenticated")
