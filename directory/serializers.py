@@ -4,6 +4,8 @@ from file.models import File
 from file.serializers import FileSerializer
 from rest_framework.exceptions import PermissionDenied
 
+
+# Directory serializer for creating, updating and deleting folders
 class DirectorySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -35,11 +37,11 @@ class DirectorySerializer(serializers.ModelSerializer):
             instance.name = validated_data["name"]
             
         # Update favorite regardless of name change
-        instance.favorite = validated_data.get('favorite', instance.favorite)  # Use get() for optional field
+        instance.favorite = validated_data.get('favorite', instance.favorite) 
         instance.save()
         return instance
     
-
+# Serializer for sending folder content
 class DirectoryListSerializer(serializers.ModelSerializer):
     adress = serializers.SerializerMethodField()
     folders = serializers.SerializerMethodField()
@@ -64,7 +66,7 @@ class DirectoryListSerializer(serializers.ModelSerializer):
         data =  FileSerializer(files,many = True).data
         return data
 
-
+# Serializer for the navigation pane
 class NavigationPaneSerializer(serializers.ModelSerializer):
     content = serializers.SerializerMethodField()
 
@@ -82,6 +84,7 @@ class NavigationPaneSerializer(serializers.ModelSerializer):
             'files': files,
         }
     
+# Serializer for the navigatiuon tree when moving folder or file
 class FoldeTreeSerializer(serializers.ModelSerializer):
     content = serializers.SerializerMethodField()
 
