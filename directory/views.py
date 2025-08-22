@@ -117,7 +117,7 @@ class GetTrash(APIView):
 
     def get(self,request):
     
-        folder = Directory.objects.filter(is_deleted= True, user = request.user)
+        folder = Directory.objects.filter(is_deleted= True, user = request.user,parent__is_deleted = False)
         files = File.objects.filter(is_deleted= True , user = request.user)
         folder = DirectorySerializer(folder,many = True)
         files = FileSerializer(files,many = True)
