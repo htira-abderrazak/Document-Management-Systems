@@ -8,7 +8,7 @@ from user.models import User
 class Directory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50,blank =True)
-    parent = models.ForeignKey('self',on_delete=models.CASCADE,null=True, blank=True)
+    parent = models.ForeignKey('self',on_delete=models.CASCADE,null=True, blank=True, related_name="children")
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
     is_deleted = models.BooleanField(default=False)
