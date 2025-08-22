@@ -31,12 +31,23 @@ class FolderViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         if request.user != instance.user :
             return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        self.Delete_children(instance)
 
         instance.is_deleted = True
         instance.expired_date = date.today()
         instance.save()
         return Response(status=204)
     
+    def Delete_children(self,instance):
+        if instance.children.exists():
+            children = instance.children.all()
+            for child in children:
+                child.is_deleted = True
+                child.expired_date = date.today()
+                child.save()
+                self.Delete_children(child)
+
 #get folder content By ID View
 class GetFolder(APIView):
 
